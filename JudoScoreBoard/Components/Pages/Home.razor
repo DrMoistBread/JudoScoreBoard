@@ -1,0 +1,104 @@
+﻿@page "/"
+@using System.Timers
+
+
+
+<section class="">
+
+  <div class="container-fluid">
+    <div class="row">
+      <div @oncontextmenu="ChangeWhiteScore" @oncontextmenu:preventDefault @onclick="ChangeWhiteScore" class="col-lg-6 vh-60 bg-white text-center align-middle user-select-none" style="font-size: 20em">
+         @_scoreWhite
+      </div>
+      <div @oncontextmenu="ChangeBlueScore" @oncontextmenu:preventDefault @onclick="ChangeBlueScore" class="col-lg-6 vh-50 bg-primary align-middle text-center user-select-none" style="font-size: 20em; color: white">
+        @_scoreBlue
+      </div>
+       <div @onclick="ToggleTime"  class="col-lg-12 vh-40 bg-dark align-middle text-center user-select-none" style="font-size: 15em; color: white">
+              @_currentCount.ToString("mm\\:ss")
+            </div>
+    </div>
+  </div>
+
+</section>
+
+@code {
+  private string _scoreBlue;
+  private string _scoreWhite;
+  private TimeSpan _currentCount;
+  private System.Timers.Timer _timer;
+  
+  protected override void OnInitialized()
+  {
+    base.OnInitialized();
+    _scoreWhite = "0";
+    _currentCount = TimeSpan.FromMinutes(4);
+    _scoreBlue = "0";
+    
+    _timer = new();
+    _timer.Interval = 1000;
+    _timer.Elapsed += async (object? sender, ElapsedEventArgs e) =>
+    {
+      _currentCount-= TimeSpan.FromSeconds(1);               
+      await InvokeAsync(StateHasChanged);
+    };
+    
+  }
+
+  private string ChangeScore(string score)
+  {
+    if (score == "0")
+    {
+     return "1";
+    }
+    if (score == "1")
+    {
+      return "Ippon!";
+    }
+    return score;
+  }
+  
+  private string RevertScore(string score)
+  {
+    if (score == "Ippon!")
+    {
+      return "1";
+    }
+    if (score == "1")
+    {
+      return "0";
+    }
+    return score;
+  }
+
+
+  public void ChangeWhiteScore(MouseEventArgs args)
+  {
+    if (args.Button == 2) // 2 represents the right mouse button
+    {
+      _scoreWhite = RevertScore(_scoreWhite);
+    }
+    if (args.Button == 0) // 0 represents the left mouse button
+    {
+      _scoreWhite = ChangeScore(_scoreWhite);
+    }
+   
+  }
+
+  public void ChangeBlueScore(MouseEventArgs args)
+  {
+    if (args.Button == 2) // 2 represents the right mouse button
+    {
+      _scoreBlue = RevertScore(_scoreBlue);
+    }
+    if (args.Button == 0) // 0 represents the left mouse button
+    {
+      _scoreBlue = ChangeScore(_scoreBlue);
+    }
+  }
+
+  private void ToggleTime()
+  {
+    _timer.Enabled = !_timer.Enabled;
+  }
+
+}
