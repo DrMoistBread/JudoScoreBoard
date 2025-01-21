@@ -30,9 +30,9 @@
   protected override void OnInitialized()
   {
     base.OnInitialized();
-    _scoreWhite = "0";
+    _scoreWhite = "000";
     _currentCount = TimeSpan.FromMinutes(4);
-    _scoreBlue = "0";
+    _scoreBlue = "000";
     
     _timer = new();
     _timer.Interval = 1000;
@@ -46,26 +46,26 @@
 
   private string ChangeScore(string score)
   {
-    if (score == "0")
+    if (score == "000")
     {
-     return "1";
+     return "10";
     }
-    if (score == "1")
+    if (score == "10")
     {
-      return "Ippon!";
+      return "100";
     }
     return score;
   }
   
   private string RevertScore(string score)
   {
-    if (score == "Ippon!")
+    if (score == "100")
     {
-      return "1";
+      return "10";
     }
-    if (score == "1")
+    if (score == "10")
     {
-      return "0";
+      return "000";
     }
     return score;
   }
