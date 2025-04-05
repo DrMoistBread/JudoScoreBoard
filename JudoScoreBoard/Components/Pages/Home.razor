@@ -1,104 +1,127 @@
 ﻿@page "/"
 @using System.Timers
 
-
-
-<section class="">
-
-  <div class="container-fluid">
+<div class="container-fluid">
     <div class="row">
-      <div @oncontextmenu="ChangeWhiteScore" @oncontextmenu:preventDefault @onclick="ChangeWhiteScore" class="col-lg-6 vh-60 bg-white text-center align-middle user-select-none" style="font-size: 20em">
-         @_scoreWhite
-      </div>
-      <div @oncontextmenu="ChangeBlueScore" @oncontextmenu:preventDefault @onclick="ChangeBlueScore" class="col-lg-6 vh-50 bg-primary align-middle text-center user-select-none" style="font-size: 20em; color: white">
-        @_scoreBlue
-      </div>
-       <div @onclick="ToggleTime"  class="col-lg-12 vh-40 bg-dark align-middle text-center user-select-none" style="font-size: 15em; color: white">
-              @_currentCount.ToString("mm\\:ss")
+        <div  class="col-6 vh-60 bg-white user-select-none" style="padding-right: 50px">
+            <div class="row" style="font-size: 5em;text-align: center; margin-top: 50px">
+                <div class="col-3"></div>
+                <div class="col-3">I</div>
+                <div class="col-3">W</div>
+                <div class="col-3">Y</div>
             </div>
+            <div class="row" style="font-size: 20em;text-align: center; vertical-align: center;margin-top: -100px">
+                <div class="col-3"></div>
+                <div class="col-3" @oncontextmenu="@(()=>DecreaseIpponScore(_scoreWhite))" @oncontextmenu:preventDefault @onclick="@(()=>IncreaseIpponScore(_scoreWhite))">@(_scoreWhite[2])</div>
+                <div class="col-3" @oncontextmenu="@(()=>DecreaseWazariScore(_scoreWhite))" @oncontextmenu:preventDefault @onclick="@(()=>IncreaseWazariScore(_scoreWhite))">@(_scoreWhite[1])</div>
+                <div class="col-3" @oncontextmenu="@(()=>DecreaseYukoScore(_scoreWhite))" @oncontextmenu:preventDefault @onclick="@(()=>IncreaseYukoScore(_scoreWhite))">@(_scoreWhite[0])</div>
+            </div>
+        </div>
+        <div class="col-6 vh-60 bg-primary user-select-none" style=" color: white">
+            <div class="row" style="font-size: 5em;text-align: center; margin-top: 50px">
+                <div class="col-3">I</div>
+                <div class="col-3">W</div>
+                <div class="col-3">Y</div>
+            </div>
+            <div class="row" style="font-size: 20em;text-align: center; vertical-align: center;margin-top: -100px">
+                <div class="col-3" @oncontextmenu="@(()=>DecreaseIpponScore(_scoreBlue))" @oncontextmenu:preventDefault @onclick="@(()=>IncreaseIpponScore(_scoreBlue))">@(_scoreBlue[2])</div>
+                <div class="col-3" @oncontextmenu="@(()=>DecreaseWazariScore(_scoreBlue))" @oncontextmenu:preventDefault @onclick="@(()=>IncreaseWazariScore(_scoreBlue))">@(_scoreBlue[1])</div>
+                <div class="col-3" @oncontextmenu="@(()=>DecreaseYukoScore(_scoreBlue))" @oncontextmenu:preventDefault @onclick="@(()=>IncreaseYukoScore(_scoreBlue))" >@(_scoreBlue[0])</div>
+                <div class="col-3"></div>
+            </div>
+        </div>
+        <div @onclick="ToggleTime" class="col-12 vh-40 bg-success align-middle text-center user-select-none" style="font-size: 15em; color: white">
+            @_currentCount.ToString("mm\\:ss")
+        </div>
     </div>
-  </div>
+</div>
 
-</section>
 
 @code {
-  private string _scoreBlue;
-  private string _scoreWhite;
-  private TimeSpan _currentCount;
-  private System.Timers.Timer _timer;
-  
-  protected override void OnInitialized()
-  {
-    base.OnInitialized();
-    _scoreWhite = "000";
-    _currentCount = TimeSpan.FromMinutes(4);
-    _scoreBlue = "000";
+    private List<int> _scoreBlue = new() {0,0,0};
+    private List<int> _scoreWhite= new() {0,0,0};
+    private TimeSpan _currentCount;
+    private Timer _timer;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        
+        _currentCount = TimeSpan.FromMinutes(4);
+
+        _timer = new();
+        _timer.Interval = 1000;
+        _timer.Elapsed += async (object? sender, ElapsedEventArgs e) =>
+        {
+            _currentCount -= TimeSpan.FromSeconds(1);
+            await InvokeAsync(StateHasChanged);
+        };
+    }
+
+    private void IncreaseYukoScore(List<int> score)
+    {
+        if (score[2] == 0)
+        {
+            score[0]++;
+        }
+    }
     
-    _timer = new();
-    _timer.Interval = 1000;
-    _timer.Elapsed += async (object? sender, ElapsedEventArgs e) =>
+    private void DecreaseYukoScore(List<int> score)
     {
-      _currentCount-= TimeSpan.FromSeconds(1);               
-      await InvokeAsync(StateHasChanged);
-    };
+        if (score[2] == 0)
+        {
+            if (score[0] > 0)
+            {
+                score[0]--;
+            }
+        }
+    }
     
-  }
+    private void IncreaseIpponScore(List<int> score)
+    {
+        if (score[2] == 0)
+        {
+            score[2]++;
+        }
+    }
+    
+    private void DecreaseIpponScore(List<int> score)
+    {
+        if (score[2] == 1)
+        {
+            score[2]--;
+        }
+    }
+    
+    private void IncreaseWazariScore(List<int> score)
+    {
+        if (score[1] == 0 && score[2]==0)
+        {
+            score[1]++;
+        }
+        else if(score[1] == 1 && score[2]==0)
+        {
+            score[1] = 0;
+            score[2] = 1;
+        }
+        
+    }
+    
+    private void DecreaseWazariScore(List<int> score)
+    {
+        if (score[1] == 1 )
+        {
+            score[1]--;
+        }
+    }
 
-  private string ChangeScore(string score)
-  {
-    if (score == "000")
-    {
-     return "10";
-    }
-    if (score == "10")
-    {
-      return "100";
-    }
-    return score;
-  }
-  
-  private string RevertScore(string score)
-  {
-    if (score == "100")
-    {
-      return "10";
-    }
-    if (score == "10")
-    {
-      return "000";
-    }
-    return score;
-  }
-
-
-  public void ChangeWhiteScore(MouseEventArgs args)
-  {
-    if (args.Button == 2) // 2 represents the right mouse button
-    {
-      _scoreWhite = RevertScore(_scoreWhite);
-    }
-    if (args.Button == 0) // 0 represents the left mouse button
-    {
-      _scoreWhite = ChangeScore(_scoreWhite);
-    }
    
-  }
 
-  public void ChangeBlueScore(MouseEventArgs args)
-  {
-    if (args.Button == 2) // 2 represents the right mouse button
-    {
-      _scoreBlue = RevertScore(_scoreBlue);
-    }
-    if (args.Button == 0) // 0 represents the left mouse button
-    {
-      _scoreBlue = ChangeScore(_scoreBlue);
-    }
-  }
 
-  private void ToggleTime()
-  {
-    _timer.Enabled = !_timer.Enabled;
-  }
+   
+    private void ToggleTime()
+    {
+        _timer.Enabled = !_timer.Enabled;
+    }
 
 }
