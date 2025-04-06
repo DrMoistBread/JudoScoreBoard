@@ -3,7 +3,7 @@
 
 <div class="container-fluid">
     <div class="row">
-        <div  class="col-6 vh-60 bg-white user-select-none" style="padding-right: 50px">
+        <div class="col-6 vh-60 bg-white user-select-none" style="padding-right: 50px">
             <div class="row" style="font-size: 5em;text-align: center; margin-top: 50px">
                 <div class="col-3"></div>
                 <div class="col-3">I</div>
@@ -12,9 +12,9 @@
             </div>
             <div class="row" style="font-size: 20em;text-align: center; vertical-align: center;margin-top: -100px">
                 <div class="col-3"></div>
-                <div class="col-3" @oncontextmenu="@(()=>DecreaseIpponScore(_scoreWhite))" @oncontextmenu:preventDefault @onclick="@(()=>IncreaseIpponScore(_scoreWhite))">@(_scoreWhite[2])</div>
-                <div class="col-3" @oncontextmenu="@(()=>DecreaseWazariScore(_scoreWhite))" @oncontextmenu:preventDefault @onclick="@(()=>IncreaseWazariScore(_scoreWhite))">@(_scoreWhite[1])</div>
-                <div class="col-3" @oncontextmenu="@(()=>DecreaseYukoScore(_scoreWhite))" @oncontextmenu:preventDefault @onclick="@(()=>IncreaseYukoScore(_scoreWhite))">@(_scoreWhite[0])</div>
+                <div class="col-3" @oncontextmenu="@(() => DecreaseIpponScore(_scoreWhite))" @oncontextmenu:preventDefault @onclick="@(() => IncreaseIpponScore(_scoreWhite))">@(_scoreWhite[2])</div>
+                <div class="col-3" @oncontextmenu="@(() => DecreaseWazariScore(_scoreWhite))" @oncontextmenu:preventDefault @onclick="@(() => IncreaseWazariScore(_scoreWhite))">@(_scoreWhite[1])</div>
+                <div class="col-3" @oncontextmenu="@(() => DecreaseYukoScore(_scoreWhite))" @oncontextmenu:preventDefault @onclick="@(() => IncreaseYukoScore(_scoreWhite))">@(_scoreWhite[0])</div>
             </div>
         </div>
         <div class="col-6 vh-60 bg-primary user-select-none" style=" color: white">
@@ -24,39 +24,63 @@
                 <div class="col-3">Y</div>
             </div>
             <div class="row" style="font-size: 20em;text-align: center; vertical-align: center;margin-top: -100px">
-                <div class="col-3" @oncontextmenu="@(()=>DecreaseIpponScore(_scoreBlue))" @oncontextmenu:preventDefault @onclick="@(()=>IncreaseIpponScore(_scoreBlue))">@(_scoreBlue[2])</div>
-                <div class="col-3" @oncontextmenu="@(()=>DecreaseWazariScore(_scoreBlue))" @oncontextmenu:preventDefault @onclick="@(()=>IncreaseWazariScore(_scoreBlue))">@(_scoreBlue[1])</div>
-                <div class="col-3" @oncontextmenu="@(()=>DecreaseYukoScore(_scoreBlue))" @oncontextmenu:preventDefault @onclick="@(()=>IncreaseYukoScore(_scoreBlue))" >@(_scoreBlue[0])</div>
+                <div class="col-3" @oncontextmenu="@(() => DecreaseIpponScore(_scoreBlue))" @oncontextmenu:preventDefault @onclick="@(() => IncreaseIpponScore(_scoreBlue))">@(_scoreBlue[2])</div>
+                <div class="col-3" @oncontextmenu="@(() => DecreaseWazariScore(_scoreBlue))" @oncontextmenu:preventDefault @onclick="@(() => IncreaseWazariScore(_scoreBlue))">@(_scoreBlue[1])</div>
+                <div class="col-3" @oncontextmenu="@(() => DecreaseYukoScore(_scoreBlue))" @oncontextmenu:preventDefault @onclick="@(() => IncreaseYukoScore(_scoreBlue))">@(_scoreBlue[0])</div>
                 <div class="col-3"></div>
             </div>
         </div>
-        
-        <div @onclick="ToggleTime" class="col-12 vh-40 align-middle text-center user-select-none" style="font-size: 15em; color: white; background-color: @_bgColour">
-            @_currentCount.ToString("mm\\:ss")
+        <div>
+            <div class="row" style="background-color: @_bgColour;font-size: 15em; color: white;">
+                <div class="col-3" style="text-align: center">@_osaekomiWhite</div>
+                <div @onclick="ToggleTime" class="col-6 vh-40 align-middle text-center user-select-none" >
+                    @_currentCount.ToString("mm\\:ss")
+                </div>
+                <div class="col-3" style="text-align: center" @onclick="ToggleOsaekomi">@_osaekomiBlue</div>
+
+            </div>
+
         </div>
+
     </div>
 </div>
 
 
 @code {
-    private List<int> _scoreBlue = new() {0,0,0};
-    private List<int> _scoreWhite= new() {0,0,0};
+        private const int IPPON = 2;
+        private const int WAZARI = 1;
+        private const int Yuko = 0;
+    private List<int> _scoreBlue = new() { 0, 0, 0 };
+    private List<int> _scoreWhite = new() { 0, 0, 0 };
     private string _bgColour;
     private TimeSpan _currentCount;
     private Timer _timer;
+    private Timer _osaekomiTimer;
+    private int _osaekomiWhite = 0;
+    private int _osaekomiBlue = 0;
 
     protected override void OnInitialized()
     {
-        
         base.OnInitialized();
+        _osaekomiTimer = new();
         
         _currentCount = TimeSpan.FromMinutes(4);
         _bgColour = "red";
         _timer = new();
+        
+
+        _osaekomiTimer.Interval = 1000;
         _timer.Interval = 1000;
         _timer.Elapsed += async (object? sender, ElapsedEventArgs e) =>
         {
             _currentCount -= TimeSpan.FromSeconds(1);
+            await InvokeAsync(StateHasChanged);
+        };
+        
+        _osaekomiTimer.Elapsed += async (object? sender, ElapsedEventArgs e) =>
+        {
+            _osaekomiBlue++;
+            _osaekomiWhite++;
             await InvokeAsync(StateHasChanged);
         };
     }
@@ -68,7 +92,7 @@
             score[0]++;
         }
     }
-    
+
     private void DecreaseYukoScore(List<int> score)
     {
         if (score[2] == 0)
@@ -79,7 +103,7 @@
             }
         }
     }
-    
+
     private void IncreaseIpponScore(List<int> score)
     {
         if (score[2] == 0)
@@ -87,7 +111,7 @@
             score[2]++;
         }
     }
-    
+
     private void DecreaseIpponScore(List<int> score)
     {
         if (score[2] == 1)
@@ -95,29 +119,36 @@
             score[2]--;
         }
     }
-    
+
     private void IncreaseWazariScore(List<int> score)
     {
-        if (score[1] == 0 && score[2]==0)
+        if (score[1] == 0 && score[2] == 0)
         {
             score[1]++;
         }
-        else if(score[1] == 1 && score[2]==0)
+        else if (score[1] == 1 && score[2] == 0)
         {
             score[1] = 0;
             score[2] = 1;
         }
-        
     }
-    
+
     private void DecreaseWazariScore(List<int> score)
     {
-        if (score[1] == 1 )
+        if (score[1] == 1)
         {
             score[1]--;
         }
     }
-    
+
+    private void ToggleOsaekomi()
+    {
+        if (_timer.Enabled)
+        {
+            _osaekomiTimer.Enabled = !_osaekomiTimer.Enabled;
+        }
+    }
+
     private void ToggleTime()
     {
         if (_bgColour == "red")
@@ -128,8 +159,9 @@
         {
             _bgColour = "red";
         }
-        
+
         _timer.Enabled = !_timer.Enabled;
+        _osaekomiTimer.Enabled = false;
     }
 
 }
