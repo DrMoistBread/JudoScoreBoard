@@ -30,7 +30,8 @@
                 <div class="col-3"></div>
             </div>
         </div>
-        <div @onclick="ToggleTime" class="col-12 vh-40 bg-success align-middle text-center user-select-none" style="font-size: 15em; color: white">
+        
+        <div @onclick="ToggleTime" class="col-12 vh-40 align-middle text-center user-select-none" style="font-size: 15em; color: white; background-color: @_bgColour">
             @_currentCount.ToString("mm\\:ss")
         </div>
     </div>
@@ -40,15 +41,17 @@
 @code {
     private List<int> _scoreBlue = new() {0,0,0};
     private List<int> _scoreWhite= new() {0,0,0};
+    private string _bgColour;
     private TimeSpan _currentCount;
     private Timer _timer;
 
     protected override void OnInitialized()
     {
+        
         base.OnInitialized();
         
         _currentCount = TimeSpan.FromMinutes(4);
-
+        _bgColour = "red";
         _timer = new();
         _timer.Interval = 1000;
         _timer.Elapsed += async (object? sender, ElapsedEventArgs e) =>
@@ -114,13 +117,18 @@
             score[1]--;
         }
     }
-
-   
-
-
-   
+    
     private void ToggleTime()
     {
+        if (_bgColour == "red")
+        {
+            _bgColour = "green";
+        }
+        else
+        {
+            _bgColour = "red";
+        }
+        
         _timer.Enabled = !_timer.Enabled;
     }
 
