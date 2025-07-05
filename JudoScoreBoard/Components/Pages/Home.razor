@@ -1,5 +1,6 @@
 ﻿@page "/"
 @using System.Timers
+@using HostingEnvironmentExtensions = Microsoft.AspNetCore.Hosting.HostingEnvironmentExtensions
 
 <div class="container-fluid">
     <div class="row">
@@ -11,7 +12,7 @@
                 <div class="col-3">Y</div>
             </div>
             <div class="row" style="font-size: 20em;text-align: center; vertical-align: center;margin-top: -100px">
-                <div class="col-3"></div>
+                <div class="col-3" @oncontextmenu="@(() => RemoveShido(_scoreWhite))" @oncontextmenu:preventDefault @onclick="@(() => AddShido(_scoreWhite))"><img src="@ShidoImages[_scoreWhite[SHIDO]]" alt="" width="100px"></div>
                 <div class="col-3" @oncontextmenu="@(() => DecreaseIpponScore(_scoreWhite))" @oncontextmenu:preventDefault @onclick="@(() => IncreaseIpponScore(_scoreWhite))">@(_scoreWhite[2])</div>
                 <div class="col-3" @oncontextmenu="@(() => DecreaseWazariScore(_scoreWhite))" @oncontextmenu:preventDefault @onclick="@(() => IncreaseWazariScore(_scoreWhite))">@(_scoreWhite[1])</div>
                 <div class="col-3" @oncontextmenu="@(() => DecreaseYukoScore(_scoreWhite))" @oncontextmenu:preventDefault @onclick="@(() => IncreaseYukoScore(_scoreWhite))">@(_scoreWhite[0])</div>
@@ -27,16 +28,22 @@
                 <div class="col-3" @oncontextmenu="@(() => DecreaseIpponScore(_scoreBlue))" @oncontextmenu:preventDefault @onclick="@(() => IncreaseIpponScore(_scoreBlue))">@(_scoreBlue[2])</div>
                 <div class="col-3" @oncontextmenu="@(() => DecreaseWazariScore(_scoreBlue))" @oncontextmenu:preventDefault @onclick="@(() => IncreaseWazariScore(_scoreBlue))">@(_scoreBlue[1])</div>
                 <div class="col-3" @oncontextmenu="@(() => DecreaseYukoScore(_scoreBlue))" @oncontextmenu:preventDefault @onclick="@(() => IncreaseYukoScore(_scoreBlue))">@(_scoreBlue[0])</div>
-                <div class="col-3"></div>
+                <div class="col-3" @oncontextmenu="@(() => RemoveShido(_scoreBlue))" @oncontextmenu:preventDefault @onclick="@(() => AddShido(_scoreBlue))"><img src="@ShidoImages[_scoreBlue[SHIDO]]" alt="" width="100px"></div>
             </div>
         </div>
         <div>
             <div class="row" style="background-color: @_bgColour;font-size: 15em; color: white;">
-                <div class="col-3" style="text-align: center">@_osaekomiWhite</div>
-                <div @onclick="ToggleTime" class="col-6 vh-40 align-middle text-center user-select-none" >
+                <div class="col-3" style="text-align: center" @onclick='()=> ToggleOsaekomi("white")'>
+                    <div hidden="@(_hiddenWhite)"> @_osaekomiCount</div>
+                </div>
+                <div @onclick="ToggleTime" class="col-6 vh-40 align-middle text-center user-select-none">
                     @_currentCount.ToString("mm\\:ss")
                 </div>
-                <div class="col-3" style="text-align: center" @onclick="ToggleOsaekomi">@_osaekomiBlue</div>
+                <div class="col-3" style="text-align: center" @onclick='()=> ToggleOsaekomi("blue")'>
+                    <div hidden="@(_hiddenBlue)">
+                        @_osaekomiCount
+                    </div>
+                </div>
 
             </div>
 
@@ -49,24 +56,36 @@
 @code {
         private const int IPPON = 2;
         private const int WAZARI = 1;
-        private const int Yuko = 0;
-    private List<int> _scoreBlue = new() { 0, 0, 0 };
-    private List<int> _scoreWhite = new() { 0, 0, 0 };
+        private const int YUKO = 0;
+        private const int SHIDO = 3;
+    private List<int> _scoreBlue = new() { 0, 0, 0 , 0};
+    private List<int> _scoreWhite = new() { 0, 0, 0, 0};
     private string _bgColour;
     private TimeSpan _currentCount;
     private Timer _timer;
     private Timer _osaekomiTimer;
-    private int _osaekomiWhite = 0;
-    private int _osaekomiBlue = 0;
+    private bool _hiddenWhite = true;
+    private bool _hiddenBlue = true;
+    private string _currentOsaekomiTori = "";
+    private int _osaekomiCount = 0;
+    private bool _isGoldenScore = false;
+    private string ShidoImage;
+    private string[] ShidoImages =
+    [
+        "",
+        "/Images/OneShido.png",
+        "/Images/TwoShido.png",
+        "/Images/Hansokumake.png"
+    ];
 
     protected override void OnInitialized()
     {
         base.OnInitialized();
         _osaekomiTimer = new();
         
-        _currentCount = TimeSpan.FromMinutes(4);
+        _currentCount = TimeSpan.FromSeconds(4);
         _bgColour = "red";
-        _timer = new();
+        _timer = new Timer();
         
 
         _osaekomiTimer.Interval = 1000;
@@ -74,13 +93,49 @@
         _timer.Elapsed += async (object? sender, ElapsedEventArgs e) =>
         {
             _currentCount -= TimeSpan.FromSeconds(1);
+            if (_currentCount is { Minutes: 0, Seconds: 0 } )
+            {
+               ToggleTime();
+                _isGoldenScore = true;
+            }
+            
             await InvokeAsync(StateHasChanged);
         };
         
         _osaekomiTimer.Elapsed += async (object? sender, ElapsedEventArgs e) =>
         {
-            _osaekomiBlue++;
-            _osaekomiWhite++;
+            _osaekomiCount++;
+
+            if (_osaekomiCount is >= 10 and < 20)
+            {
+                if (_scoreBlue[WAZARI] == 1 && _currentOsaekomiTori == "blue")
+                {
+                    _scoreBlue[IPPON] = 1;
+                    _scoreBlue[WAZARI] = 0;
+                    ToggleTime();
+                }
+                if (_scoreWhite[WAZARI] == 1 && _currentOsaekomiTori == "white")
+                {
+                    _scoreWhite[IPPON] = 1;
+                    _scoreWhite[WAZARI] = 0;
+                    ToggleTime();
+                }
+            }
+            if (_osaekomiCount >= 20)
+            {
+                _osaekomiTimer.Stop();
+                if (_currentOsaekomiTori == "blue")
+                {
+                    _scoreBlue[IPPON] = 1;
+                }
+                else
+                {
+                    _scoreWhite[IPPON] = 1;
+                }
+
+                ToggleTime();
+            }
+            
             await InvokeAsync(StateHasChanged);
         };
     }
@@ -106,30 +161,32 @@
 
     private void IncreaseIpponScore(List<int> score)
     {
-        if (score[2] == 0)
+        if (score[IPPON] == 0)
         {
-            score[2]++;
+            score[IPPON]++;
+            ToggleTime();
         }
     }
 
     private void DecreaseIpponScore(List<int> score)
     {
-        if (score[2] == 1)
+        if (score[IPPON] == 1)
         {
-            score[2]--;
+            score[IPPON]--;
         }
     }
 
     private void IncreaseWazariScore(List<int> score)
     {
-        if (score[1] == 0 && score[2] == 0)
+        if (score[WAZARI] == 0 && score[IPPON] == 0)
         {
             score[1]++;
         }
-        else if (score[1] == 1 && score[2] == 0)
+        else if (score[WAZARI] == 1 && score[IPPON] == 0)
         {
             score[1] = 0;
             score[2] = 1;
+            ToggleTime();
         }
     }
 
@@ -141,11 +198,57 @@
         }
     }
 
-    private void ToggleOsaekomi()
+    private void ToggleOsaekomi(string tori)
     {
         if (_timer.Enabled)
         {
-            _osaekomiTimer.Enabled = !_osaekomiTimer.Enabled;
+            if (!_osaekomiTimer.Enabled)
+            {
+                _osaekomiTimer.Start();
+                _osaekomiCount = 0;
+            }
+            else if(_currentOsaekomiTori == tori)
+            {
+                
+                _osaekomiTimer.Stop();
+                if (_osaekomiCount >= 5 && _osaekomiCount < 10)
+                {
+                    if (_currentOsaekomiTori=="blue")
+                    {
+                        _scoreBlue[YUKO]++;
+                    }
+                    else
+                    {
+                        _scoreWhite[YUKO]++;
+                    }
+                }
+                
+                if (_osaekomiCount >= 10 && _osaekomiCount < 20)
+                {
+                    if (_currentOsaekomiTori=="blue")
+                    {
+                        _scoreBlue[WAZARI]++;
+                    }
+                    else
+                    {
+                        _scoreWhite[WAZARI]++;
+                    }
+                }
+            }
+            
+            if (tori == "white")
+            {
+                _hiddenBlue = true;
+                _hiddenWhite = false;
+            }
+            
+            if (tori == "blue")
+            {
+                _hiddenBlue = false;
+                _hiddenWhite = true;
+            }
+            
+            _currentOsaekomiTori = tori;
         }
     }
 
@@ -161,7 +264,26 @@
         }
 
         _timer.Enabled = !_timer.Enabled;
-        _osaekomiTimer.Enabled = false;
+        if (_timer.Enabled)
+        {
+            _hiddenBlue = true;
+            _hiddenWhite = true;
+        }
+        _osaekomiTimer.Stop();
+    }
+
+    private void AddShido(List<int> score)
+    {
+        if(score[SHIDO]>=3)
+            return;
+        ShidoImage = ShidoImages[++score[SHIDO]];
+    }
+    
+    private void RemoveShido(List<int> score)
+    {
+        if(score[SHIDO]<=0)
+            return;
+        ShidoImage = ShidoImages[--score[SHIDO]];
     }
 
 }
