@@ -57,3 +57,55 @@ h1:focus {
 .vh-40 {
     height: 40vh;
 }
+
+
+.modal-backdrop-ui {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: flex;
+    align-items: center;       /* vertical centering */
+    justify-content: center;   /* horizontal centering */
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.modal-content-ui {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    min-width: 300px;
+    max-width: 90vw;
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    text-align: center; /* center all text inside */
+}
+
+.modal-content-time{
+    font-size: 3rem;
+}
+
+.fancy-button {
+    background-color: #1b6ec2;
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    font-size: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.fancy-button:hover {
+    background-color: #175da5;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.fancy-button:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+
+
+

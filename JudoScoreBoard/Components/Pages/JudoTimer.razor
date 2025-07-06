@@ -1,0 +1,59 @@
+@page "/timer"
+@using Microsoft.AspNetCore.Components.Web
+
+<h3>⏱️ Temporizador</h3>
+
+<input @ref="focusTarget" style="position:absolute; left:-9999px;" @onkeydown="HandleKeyDown" />
+
+@if (showModal)
+{
+    <div class="modal-backdrop">
+        <div class="modal-content" @onclick:stopPropagation>
+            <h4>Ajustar Tempo</h4>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 1rem;">
+                <button @onclick="() => AdjustTime(60)">+1 min</button>
+                <button @onclick="() => AdjustTime(-60)">-1 min</button>
+                <button @onclick="() => AdjustTime(10)">+10 sec</button>
+                <button @onclick="() => AdjustTime(-10)">-10 sec</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private int minutes = 0;
+    private int seconds = 0;
+    private bool showModal = false;
+    private ElementReference focusTarget;
+
+    private void AdjustTime(int deltaSeconds)
+    {
+        int totalSeconds = minutes * 60 + seconds + deltaSeconds;
+        if (totalSeconds < 0) totalSeconds = 0;
+
+        minutes = totalSeconds / 60;
+        seconds = totalSeconds % 60;
+    }
+
+    private void HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.CtrlKey && e.Key == "t")
+        {
+            showModal = !showModal;
+            StateHasChanged();
+        }
+    }
+    
+    private void CloseModal()
+    {
+        showModal = false;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await focusTarget.FocusAsync();
+        }
+    }
+}

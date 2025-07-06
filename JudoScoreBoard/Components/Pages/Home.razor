@@ -1,6 +1,28 @@
 ﻿@page "/"
 @using System.Timers
-@using HostingEnvironmentExtensions = Microsoft.AspNetCore.Hosting.HostingEnvironmentExtensions
+@implements IAsyncDisposable
+@inject HotKeys HotKeys
+@using Toolbelt.Blazor.HotKeys2
+
+@if (showModal)
+{
+    <div class="modal-backdrop-ui">
+        <div class="modal-content-ui">
+            <h4>Ajustar Tempo</h4>
+            <div class="modal-content-time"> @_currentCount.ToString("mm\\:ss")</div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 1rem;">
+                <button class="fancy-button" @onclick="() => AdjustTime(60)">+1 min</button>
+                <button class="fancy-button" @onclick="() => AdjustTime(-60)">-1 min</button>
+                <button class="fancy-button" @onclick="() => AdjustTime(10)">+10 sec</button>
+                <button class="fancy-button" @onclick="() => AdjustTime(-10)">-10 sec</button>
+                <button class="fancy-button" @onclick="() => AdjustTime(1)">+1 sec</button>
+                <button class="fancy-button" @onclick="() => AdjustTime(-1)">-1 sec</button>
+                <button class="fancy-button" @onclick="TogglePanel">Fechar</button>
+            </div>
+
+        </div>
+    </div>
+}
 
 <div class="container-fluid">
     <div class="row">
@@ -32,7 +54,7 @@
             </div>
         </div>
         <div>
-            <div class="row" style="background-color: @_bgColour;font-size: 15em; color: white;">
+            <div  class="row" style="background-color: @_bgColour;font-size: 15em; color: white;">
                 <div class="col-3" style="text-align: center" @onclick='()=> ToggleOsaekomi("white")'>
                     <div hidden="@(_hiddenWhite)"> @_osaekomiCount</div>
                 </div>
@@ -54,6 +76,11 @@
 
 
 @code {
+
+    private HotKeysContext? _hotKeysContext;
+    
+    private bool showModal = false;
+
         private const int IPPON = 2;
         private const int WAZARI = 1;
         private const int YUKO = 0;
@@ -81,7 +108,7 @@
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        _osaekomiTimer = new();
+        _osaekomiTimer = new Timer();
         
         _currentCount = TimeSpan.FromSeconds(4);
         _bgColour = "red";
@@ -284,6 +311,45 @@
         if(score[SHIDO]<=0)
             return;
         ShidoImage = ShidoImages[--score[SHIDO]];
+    }
+    
+    private void TogglePanel()
+    {
+       
+            showModal = !showModal;
+            StateHasChanged();
+        
+    }
+    
+    private void AdjustTime(int deltaSeconds)
+    {
+        var newtime = _currentCount.Add(TimeSpan.FromSeconds(deltaSeconds));
+        if (newtime.TotalSeconds > 0)
+        {
+            _currentCount = newtime;
+        } 
+        
+        
+        StateHasChanged();
+        
+    }
+    
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _hotKeysContext = HotKeys.CreateContext()
+                .Add(ModCode.Ctrl, Code.T, TogglePanel);
+        }
+    }
+    
+   
+    public async ValueTask DisposeAsync()
+    {
+        if (_hotKeysContext is not null)
+        {
+            await _hotKeysContext.DisposeAsync();
+        }
     }
 
 }
