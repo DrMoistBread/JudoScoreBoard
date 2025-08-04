@@ -1,3 +1,4 @@
+using Blazored.LocalStorage;
 using JudoScoreBoard.Components;
 using Toolbelt.Blazor.Extensions.DependencyInjection;
 
@@ -8,6 +9,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddHotKeys2();
+builder.Services.AddBlazoredLocalStorage();
 
 var app = builder.Build();
 
