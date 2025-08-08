@@ -1,13 +1,25 @@
-html, body {
+/* Base */
+html {
+    height: 100%;
+    font-size: clamp(14px, 2vw, 18px);
+}
+
+body {
     height: 100%;
     margin: 0;
     padding: 0;
-}
-
-.full-page {
+    overflow: hidden; /* Prevent both horizontal and vertical scroll */
     display: flex;
     flex-direction: column;
-    min-height: 100vh; /* 100% of the viewport height */
+}
+
+/* Full Page Container */
+.full-page {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
 }
 
 /* Modal */
@@ -24,16 +36,18 @@ html, body {
 
 .modal-content-ui {
     background: white;
-    padding: 1.5rem;
+    padding: 1rem;
     border-radius: 8px;
     width: 100%;
     max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
     text-align: center;
     box-shadow: 0 0 10px rgba(0,0,0,0.3);
 }
 
 .modal-content-time {
-    font-size: 2rem;
+    font-size: clamp(1.5rem, 4vw, 2rem);
     margin-bottom: 1rem;
 }
 
@@ -72,6 +86,14 @@ html, body {
     .fancy-button {
         flex: 1 1 100%;
     }
+
+    .modal-content-ui {
+        font-size: 0.9rem;
+    }
+
+    .modal-content-time {
+        font-size: clamp(1.2rem, 5vw, 1.8rem);
+    }
 }
 
 /* Scoreboard */
@@ -79,14 +101,18 @@ html, body {
     display: flex;
     flex-direction: column;
     width: 100%;
+    flex: 1;
+    overflow: hidden;
 }
 
 .scoreboard-side {
-    flex: 1 1 100%;
-    padding: 1rem;
+    flex: 1;
+    padding: 0.5rem;
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
+    overflow: hidden;
 }
 
 .white-side {
@@ -103,19 +129,19 @@ html, body {
 .score-value-row {
     display: flex;
     justify-content: center;
-    gap: 1rem;
+    gap: 0.5rem;
     width: 100%;
-    margin: 1rem 0;
+    margin: 0.5rem 0;
 }
 
 .score-label {
-    font-size: clamp(2rem, 5vw, 5rem);
+    font-size: clamp(1.5rem, 5vw, 4rem);
     text-align: center;
     flex: 1;
 }
 
 .score-value {
-    font-size: clamp(4rem, 10vw, 10rem);
+    font-size: clamp(3rem, 8vw, 8rem);
     text-align: center;
     flex: 1;
     user-select: none;
@@ -126,9 +152,10 @@ html, body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: clamp(3rem, 9vw, 10rem);
+    font-size: clamp(2rem, 7vw, 8rem);
     color: white;
-    padding: 1rem;
+    padding: 0.5rem;
+    flex-wrap: wrap;
 }
 
 .timer-display {
@@ -138,7 +165,7 @@ html, body {
 }
 
 .osaekomi {
-    width: 20%;
+    width: 100%;
     text-align: center;
     user-select: none;
 }
@@ -151,8 +178,28 @@ html, body {
     .scoreboard-side {
         flex: 1 1 50%;
     }
+
+    .osaekomi {
+        width: 20%;
+    }
 }
 
+@media (max-width: 600px) {
+    .score-label {
+        font-size: clamp(1.2rem, 6vw, 3rem);
+    }
+
+    .score-value {
+        font-size: clamp(2.5rem, 7vw, 6rem);
+    }
+
+    .timer-bar {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+
+/* Flash Animation */
 @keyframes flash {
     0%   { opacity: 1; }
     50%  { opacity: 0; }
@@ -160,6 +207,5 @@ html, body {
 }
 
 .flash-effect {
-    animation: flash 1s ease-in-out 0s 3; /* duration: 0.5s, repeat: 3 times */
+    animation: flash 1s ease-in-out 0s 3;
 }
-
