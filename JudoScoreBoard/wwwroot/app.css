@@ -8,18 +8,101 @@ body {
     height: 100%;
     margin: 0;
     padding: 0;
-    overflow: hidden; /* Prevent both horizontal and vertical scroll */
+    overflow: hidden;
     display: flex;
     flex-direction: column;
 }
 
 /* Full Page Container */
 .full-page {
-    flex: 1;
     display: flex;
     flex-direction: column;
     height: 100vh;
+    width: 100vw;
     overflow: hidden;
+}
+
+/* Scoreboard Layout */
+.scoreboard-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 66.6666%; /* Two-thirds of screen height */
+    overflow: hidden;
+}
+
+/* Scoreboard Sides as Rows */
+.scoreboard-side {
+    height: 50%; /* Half of scoreboard container = 1/3 of screen */
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.white-side {
+    background-color: white;
+    color: black;
+}
+
+.blue-side {
+    background-color: #1e3a8a;
+    color: white;
+}
+
+/* Score Text */
+.score-label-row,
+.score-value-row {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    margin: 0.5rem 0;
+}
+
+.score-label {
+    font-size: clamp(1.5rem, 5vw, 4rem);
+    text-align: center;
+    flex: 1;
+}
+
+.score-value {
+    font-size: clamp(3rem, 8vw, 8rem);
+    text-align: center;
+    flex: 1;
+    user-select: none;
+}
+
+/* Timer Bar */
+.timer-bar {
+    height: 33.3333%; /* One-third of screen height */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: clamp(2rem, 7vw, 8rem);
+    background-color: #1e3a8a;
+    color: white;
+    padding: 0.5rem;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.timer-display {
+    user-select: none;
+    text-align: center;
+    width: 100%;
+}
+
+.osaekomi {
+    font-size: clamp(1.5rem, 5vw, 4rem);
+    text-align: center;
+    user-select: none;
+    margin-top: 0.5rem;
+    width: 100%;
 }
 
 /* Modal */
@@ -82,6 +165,18 @@ body {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
+/* Flash Animation */
+@keyframes flash {
+    0%   { opacity: 1; }
+    50%  { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+.flash-effect {
+    animation: flash 1s ease-in-out 0s 3;
+}
+
+/* Responsive Adjustments */
 @media (max-width: 600px) {
     .fancy-button {
         flex: 1 1 100%;
@@ -94,97 +189,7 @@ body {
     .modal-content-time {
         font-size: clamp(1.2rem, 5vw, 1.8rem);
     }
-}
 
-/* Scoreboard */
-.scoreboard-container {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    flex: 1;
-    overflow: hidden;
-}
-
-.scoreboard-side {
-    flex: 1;
-    padding: 0.5rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-}
-
-.white-side {
-    background-color: white;
-    color: black;
-}
-
-.blue-side {
-    background-color: #1e3a8a;
-    color: white;
-}
-
-.score-label-row,
-.score-value-row {
-    display: flex;
-    justify-content: center;
-    gap: 0.5rem;
-    width: 100%;
-    margin: 0.5rem 0;
-}
-
-.score-label {
-    font-size: clamp(1.5rem, 5vw, 4rem);
-    text-align: center;
-    flex: 1;
-}
-
-.score-value {
-    font-size: clamp(3rem, 8vw, 8rem);
-    text-align: center;
-    flex: 1;
-    user-select: none;
-}
-
-/* Timer Bar */
-.timer-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: clamp(2rem, 7vw, 8rem);
-    color: white;
-    padding: 0.5rem;
-    flex-wrap: wrap;
-}
-
-.timer-display {
-    flex: 1;
-    text-align: center;
-    user-select: none;
-}
-
-.osaekomi {
-    width: 100%;
-    text-align: center;
-    user-select: none;
-}
-
-@media (min-width: 768px) {
-    .scoreboard-container {
-        flex-direction: row;
-    }
-
-    .scoreboard-side {
-        flex: 1 1 50%;
-    }
-
-    .osaekomi {
-        width: 20%;
-    }
-}
-
-@media (max-width: 600px) {
     .score-label {
         font-size: clamp(1.2rem, 6vw, 3rem);
     }
@@ -194,18 +199,10 @@ body {
     }
 
     .timer-bar {
-        flex-direction: column;
-        gap: 0.5rem;
+        font-size: clamp(2rem, 8vw, 6rem);
     }
-}
 
-/* Flash Animation */
-@keyframes flash {
-    0%   { opacity: 1; }
-    50%  { opacity: 0; }
-    100% { opacity: 1; }
-}
-
-.flash-effect {
-    animation: flash 1s ease-in-out 0s 3;
+    .osaekomi {
+        font-size: clamp(1.2rem, 6vw, 3rem);
+    }
 }

@@ -32,16 +32,15 @@
     <div class="scoreboard-container">
 
         <div class="scoreboard-side white-side">
-            <div class="score-label-row">
-                <div class="score-value"></div>
-                <div class="score-value">I</div>
-                <div class="score-value">W</div>
-                <div class="score-value">Y</div>
-            </div>
+            @* <div class="score-label-row"> *@
+            @*      *@
+            @*     <div class="score-value">I</div> *@
+            @*     <div class="score-value">W</div> *@
+            @*     <div class="score-value">Y</div> *@
+            @*     <div class="score-value"></div> *@
+            @* </div> *@
             <div class="score-value-row @flashWhiteClass">
-                <div class="score-value" @oncontextmenu="@(() => RemoveShido(_scoreWhite, _scoreBlue))"
-                     @oncontextmenu:preventDefault @onclick="@(() => AddShido(_scoreWhite, _scoreBlue))"><img
-                        src="@ShidoImages[_scoreWhite[SHIDO]]" alt="" width="100px"></div>
+                
                 <div class="score-value" @oncontextmenu="@(() => DecreaseIpponScore(_scoreWhite))"
                      @oncontextmenu:preventDefault
                      @onclick="@(() => IncreaseIpponScore(_scoreWhite))">@(_scoreWhite[2])</div>
@@ -51,16 +50,19 @@
                 <div class="score-value" @oncontextmenu="@(() => DecreaseYukoScore(_scoreWhite))"
                      @oncontextmenu:preventDefault
                      @onclick="@(() => IncreaseYukoScore(_scoreWhite))">@(_scoreWhite[0])</div>
+                <div class="score-value" @oncontextmenu="@(() => RemoveShido(_scoreWhite, _scoreBlue))"
+                     @oncontextmenu:preventDefault @onclick="@(() => AddShido(_scoreWhite, _scoreBlue))"><img
+                                                                                                             src="@ShidoImages[_scoreWhite[SHIDO]]" alt="" width="100px"></div>
             </div>
         </div>
         <div class="scoreboard-side blue-side" style=" color: white">
-            <div class="score-label-row">
-                <div class="score-value">I</div>
-                <div class="score-value">W</div>
-                <div class="score-value">Y</div>
-                <div class="score-value"></div>
-            </div>
-            <div class="score-value-row @flashBlueClass">
+            @* <div class="score-label-row"> *@
+            @*     <div class="score-value">I</div> *@
+            @*     <div class="score-value">W</div> *@
+            @*     <div class="score-value">Y</div> *@
+            @*     <div class="score-value"></div> *@
+             @* </div>             *@
+            <div class="score-value-row @flashBlueClass"> 
                 <div class="score-value" @oncontextmenu="@(() => DecreaseIpponScore(_scoreBlue))"
                      @oncontextmenu:preventDefault
                      @onclick="@(() => IncreaseIpponScore(_scoreBlue))">@(_scoreBlue[2])</div>
@@ -70,30 +72,29 @@
                 <div class="score-value" @oncontextmenu="@(() => DecreaseYukoScore(_scoreBlue))"
                      @oncontextmenu:preventDefault
                      @onclick="@(() => IncreaseYukoScore(_scoreBlue))">@(_scoreBlue[0])</div>
-                <div class="score-value" @oncontextmenu="@(() => RemoveShido(_scoreBlue,_scoreWhite))" @oncontextmenu:preventDefault
-                     @onclick="@(() => AddShido(_scoreBlue,_scoreWhite))"><img src="@ShidoImages[_scoreBlue[SHIDO]]" alt=""
-                                                                   width="100px"></div>
+                <div class="score-value" @oncontextmenu="@(() => RemoveShido(_scoreBlue, _scoreWhite))"
+                     @oncontextmenu:preventDefault
+                     @onclick="@(() => AddShido(_scoreBlue, _scoreWhite))"><img src="@ShidoImages[_scoreBlue[SHIDO]]"
+                                                                                alt=""
+                                                                                width="100px"></div>
             </div>
         </div>
 
     </div>
-    <div>
-        <div class="timer-bar" style="background-color: @_bgColour;">
-            <div class="col-3" style="text-align: center; height: 200px;"
-                 @onclick='()=> ToggleOsaekomi("white")'>
-                <div hidden="@(_hiddenWhite)"> @_osaekomiCount</div>
+    <div class="timer-bar" style="background-color: @_bgColour;">
+        <div class="col-3" style="text-align: center; height: 200px;"
+             @onclick='()=> ToggleOsaekomi("white")'>
+            <div hidden="@(_hiddenWhite)"> @_osaekomiCount</div>
+        </div>
+        <div @onclick="ToggleTime" class="col-6 vh-40 align-middle text-center user-select-none">
+            <div>@_currentCount.ToString("mm\\:ss")</div>
+            <div style="font-size: 1rem;margin-top: -1rem">@(_isGoldenScore ? "GOLDEN SCORE" : "")</div>
+        </div>
+        <div class="col-3" style="text-align: center; height: 200px;"
+             @onclick='()=> ToggleOsaekomi("blue")'>
+            <div hidden="@(_hiddenBlue)">
+                @_osaekomiCount
             </div>
-            <div @onclick="ToggleTime" class="col-6 vh-40 align-middle text-center user-select-none">
-                <div>@_currentCount.ToString("mm\\:ss")</div>
-                <div style="font-size: 1rem;margin-top: -1rem">@(_isGoldenScore ? "GOLDEN SCORE" : "")</div>
-            </div>
-            <div class="col-3" style="text-align: center; height: 200px;"
-                 @onclick='()=> ToggleOsaekomi("blue")'>
-                <div hidden="@(_hiddenBlue)">
-                    @_osaekomiCount
-                </div>
-            </div>
-
         </div>
 
     </div>
@@ -156,17 +157,18 @@
         flashBlueClass = "";
         await InvokeAsync(StateHasChanged);
     }
-    
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-             _currentCount= await localStorage.GetItemAsync<TimeSpan>("timer");
-             if (_currentCount is { Minutes: 0, Seconds: 0 })
-             {
-                 _currentCount = TimeSpan.FromMinutes(4);
-             }
-              StateHasChanged(); // Refresh UI
+            _currentCount = await localStorage.GetItemAsync<TimeSpan>("timer");
+            if (_currentCount is { Minutes: 0, Seconds: 0 })
+            {
+                _currentCount = TimeSpan.FromMinutes(4);
+            }
+
+            StateHasChanged(); // Refresh UI
         }
     }
 
@@ -177,7 +179,7 @@
 
         _bgColour = "red";
         _timer = new Timer();
-        
+
         _osaekomiTimer.Interval = 1000;
         _timer.Interval = 1000;
         _timer.Elapsed += async (object? sender, ElapsedEventArgs e) =>
@@ -196,7 +198,6 @@
                     ToggleTime();
                     await CheckWinner();
                 }
-
             }
 
             await InvokeAsync(StateHasChanged);
@@ -235,8 +236,8 @@
                     _scoreWhite[WAZARI] = 0;
                     await IncreaseIpponScore(_scoreWhite);
                 }
+
                 _isOsaekomiEnabled = false;
-                
             }
 
             if (_osaekomiCount >= 20)
@@ -252,8 +253,8 @@
                 {
                     await IncreaseIpponScore(_scoreWhite);
                 }
-                _isOsaekomiEnabled = false;
 
+                _isOsaekomiEnabled = false;
             }
 
             await InvokeAsync(StateHasChanged);
@@ -265,69 +266,68 @@
         if (_scoreBlue[IPPON] > _scoreWhite[IPPON])
         {
             _winner = "BLUE";
-            
+
             await StopTime();
             await JsRuntime.InvokeAsync<string>("PlayAudio", "sound");
             await TriggerBlueFlash();
             return;
         }
-        
+
         if (_scoreWhite[IPPON] > _scoreBlue[IPPON])
         {
             _winner = "WHITE";
-            
+
             await StopTime();
             await JsRuntime.InvokeAsync<string>("PlayAudio", "sound");
             await TriggerWhiteFlash();
             return;
         }
-        
-        if (_currentCount > TimeSpan.Zero && !_isGoldenScore)     
-        {                                                         
-            return;                                               
-        }                                                         
-        
-        if (_scoreBlue[WAZARI] > _scoreWhite[WAZARI])     
-        {    
-            _winner = "BLUE";                          
-            await StopTime();
-            await JsRuntime.InvokeAsync<string>("PlayAudio", "sound");
-            await TriggerBlueFlash();
-            return;                                     
-        }                                               
-                                                 
-        if (_scoreWhite[WAZARI] > _scoreBlue[WAZARI])     
-        {     
-            _winner = "WHITE";                         
-            await StopTime();
-            await JsRuntime.InvokeAsync<string>("PlayAudio", "sound");
-            await TriggerWhiteFlash();
-            
-            return;                                     
-        }      
-        
-        if (_scoreBlue[YUKO] > _scoreWhite[YUKO])     
-        {     
-            _winner = "BLUE";  
-            await StopTime();
-            await JsRuntime.InvokeAsync<string>("PlayAudio", "sound");
-            await TriggerBlueFlash();
-                                     
-            return;                                     
-        }                                               
-                                                 
-        if (_scoreWhite[YUKO] > _scoreBlue[YUKO])     
-        {       
-            _winner = "WHITE";                          
-            await StopTime();
-            await JsRuntime.InvokeAsync<string>("PlayAudio", "sound");
-            await TriggerWhiteFlash();
-            return;                                     
+
+        if (_currentCount > TimeSpan.Zero && !_isGoldenScore)
+        {
+            return;
         }
-        
+
+        if (_scoreBlue[WAZARI] > _scoreWhite[WAZARI])
+        {
+            _winner = "BLUE";
+            await StopTime();
+            await JsRuntime.InvokeAsync<string>("PlayAudio", "sound");
+            await TriggerBlueFlash();
+            return;
+        }
+
+        if (_scoreWhite[WAZARI] > _scoreBlue[WAZARI])
+        {
+            _winner = "WHITE";
+            await StopTime();
+            await JsRuntime.InvokeAsync<string>("PlayAudio", "sound");
+            await TriggerWhiteFlash();
+
+            return;
+        }
+
+        if (_scoreBlue[YUKO] > _scoreWhite[YUKO])
+        {
+            _winner = "BLUE";
+            await StopTime();
+            await JsRuntime.InvokeAsync<string>("PlayAudio", "sound");
+            await TriggerBlueFlash();
+
+            return;
+        }
+
+        if (_scoreWhite[YUKO] > _scoreBlue[YUKO])
+        {
+            _winner = "WHITE";
+            await StopTime();
+            await JsRuntime.InvokeAsync<string>("PlayAudio", "sound");
+            await TriggerWhiteFlash();
+            return;
+        }
+
         _isGoldenScore = true;
         _winner = "";
-
     }
 
     private async Task IncreaseYukoScore(List<int> score)
@@ -357,7 +357,7 @@
         if (score[IPPON] == 0)
         {
             score[IPPON]++;
-          
+
             await CheckWinner();
         }
     }
@@ -376,7 +376,6 @@
         if (score[WAZARI] == 0 && score[IPPON] == 0)
         {
             score[WAZARI]++;
-            
         }
         else if (score[WAZARI] == 1 && score[IPPON] == 0)
         {
@@ -398,7 +397,6 @@
 
     private async Task ToggleOsaekomi(string tori)
     {
-        
         if (!_osaekomiTimer.Enabled && _timer.Enabled)
         {
             _osaekomiTimer.Start();
@@ -453,7 +451,6 @@
 
         _currentOsaekomiTori = tori;
         await CheckWinner();
-        
     }
 
     private void ToggleTime()
@@ -462,6 +459,7 @@
         {
             return;
         }
+
         if (_bgColour == "red")
         {
             _bgColour = _isGoldenScore ? "#d6b031" : "green";
@@ -495,13 +493,11 @@
             return;
         }
 
-        ShidoImage = ShidoImages[score[SHIDO]++];   
+        ShidoImage = ShidoImages[score[SHIDO]++];
         if (score[SHIDO] == 3)
         {
             await IncreaseIpponScore(otherScore);
         }
-
-       
     }
 
     private void RemoveShido(List<int> score, List<int> otherScore)
@@ -533,6 +529,7 @@
             _currentCount = newtime;
             await localStorage.SetItemAsync("timer", _currentCount);
         }
+
         StateHasChanged();
     }
 
@@ -544,7 +541,7 @@
                 .Add(ModCode.Ctrl, Code.T, TogglePanel);
         }
     }
-    
+
     public async ValueTask DisposeAsync()
     {
         if (_hotKeysContext is not null)
@@ -552,4 +549,5 @@
             await _hotKeysContext.DisposeAsync();
         }
     }
+
 }
