@@ -79,4 +79,29 @@ public class PlayerScore
             // await CheckWinner();
         }
     }
+    
+    public async Task IncreaseShidoScore()
+    {
+        if (ShidoScore > 2)
+        {
+            return;
+        }
+
+        ShidoScore++;
+    }
+    
+    public async Task DecreaseShidoScore()
+    {
+        if (ShidoScore <= 0)
+        {
+            return;
+        }
+    
+        if (ShidoScore == 3)
+        {
+           
+        }
+
+        ShidoScore--;
+    }
 }
