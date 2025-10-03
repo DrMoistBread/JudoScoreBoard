@@ -8,17 +8,16 @@ public class ScoreBoard
 {
     private Settings _settings;
 
-    private const string BLUE = "BLUE";
-    private const string WHITE = "WHITE";
-    private const int HANSOKUMAKE = 3;
-    private const string NO_WINNER = "";
+    private const int Hansokumake = 3;
     private readonly PlayerScore _whiteJudoka;
     private readonly PlayerScore _blueJudoka;
+    public Func<Task> OnTimeChanged;
+
 
     public MatchTimer Timer { get; set; }
     public OsaekomiTimer OsaekomiTimer;
 
-    private string _winner = "";
+    private Player? _winner = null;
 
     public ScoreBoard()
     {
@@ -55,64 +54,58 @@ public class ScoreBoard
 
     public TimeSpan GetMatchTime()
     {
-        return Timer._currentCount;
+        return Timer.GetTimerCount();
     }
 
     public TimeSpan SetMatchTime(int deltaSeconds)
     {
-        var newtime = Timer._currentCount.Add(TimeSpan.FromSeconds(deltaSeconds));
-        if (newtime.TotalSeconds > 0)
-        {
-            Timer._currentCount = newtime;
-        }
-
-        return Timer._currentCount;
+        return Timer.SetTimer(deltaSeconds);
     }
 
     public async Task IncreaseScore(Score score, Player player)
     {
         switch (score, player)
         {
-            case (Score.Ippon, Player.White): await _whiteJudoka.IncreaseIpponScore(); break;
-            case (Score.Wazari, Player.White): await _whiteJudoka.IncreaseWazariScore(); break;
-            case (Score.Yuko, Player.White): await _whiteJudoka.IncreaseYukoScore(); break;
+            case (Score.Ippon, Player.White): _whiteJudoka.IncreaseIpponScore(); break;
+            case (Score.Wazari, Player.White): _whiteJudoka.IncreaseWazariScore(); break;
+            case (Score.Yuko, Player.White): _whiteJudoka.IncreaseYukoScore(); break;
             case (Score.Shido, Player.White):
-                await _whiteJudoka.IncreaseShidoScore();
-                if (_whiteJudoka.ShidoScore == HANSOKUMAKE)
+                _whiteJudoka.IncreaseShidoScore();
+                if (_whiteJudoka.ShidoScore == Hansokumake)
                 {
-                    await _blueJudoka.IncreaseIpponScore();
+                    _blueJudoka.IncreaseIpponScore();
                 }
 
                 break;
-            case (Score.Ippon, Player.Blue): await _blueJudoka.IncreaseIpponScore(); break;
-            case (Score.Wazari, Player.Blue): await _blueJudoka.IncreaseWazariScore(); break;
-            case (Score.Yuko, Player.Blue): await _blueJudoka.IncreaseYukoScore(); break;
+            case (Score.Ippon, Player.Blue): _blueJudoka.IncreaseIpponScore(); break;
+            case (Score.Wazari, Player.Blue): _blueJudoka.IncreaseWazariScore(); break;
+            case (Score.Yuko, Player.Blue): _blueJudoka.IncreaseYukoScore(); break;
             case (Score.Shido, Player.Blue):
-                await _blueJudoka.IncreaseShidoScore();
-                if (_blueJudoka.ShidoScore == HANSOKUMAKE)
+                _blueJudoka.IncreaseShidoScore();
+                if (_blueJudoka.ShidoScore == Hansokumake)
                 {
-                    await _whiteJudoka.IncreaseIpponScore();
+                    _whiteJudoka.IncreaseIpponScore();
                 }
 
                 break;
         }
 
-        CheckWinner();
+        await CheckWinnerAsync();
     }
 
     public bool IsBlueWinner()
     {
-        return _winner == BLUE;
+        return _winner == Player.Blue;
     }
 
     public bool HasWinner()
     {
-        return _winner != NO_WINNER;
+        return _winner is not null;
     }
 
     public bool IsWhiteWinner()
     {
-        return _winner == WHITE;
+        return _winner == Player.White;
     }
 
 
@@ -120,83 +113,90 @@ public class ScoreBoard
     {
         switch (score, player)
         {
-            case (Score.Ippon, Player.White): await _whiteJudoka.DecreaseIpponScore(); break;
-            case (Score.Wazari, Player.White): await _whiteJudoka.DecreaseWazariScore(); break;
-            case (Score.Yuko, Player.White): await _whiteJudoka.DecreaseYukoScore(); break;
+            case (Score.Ippon, Player.White): _whiteJudoka.DecreaseIpponScore(); break;
+            case (Score.Wazari, Player.White): _whiteJudoka.DecreaseWazariScore(); break;
+            case (Score.Yuko, Player.White): _whiteJudoka.DecreaseYukoScore(); break;
             case (Score.Shido, Player.White):
-                if (_whiteJudoka.ShidoScore == HANSOKUMAKE)
+                if (_whiteJudoka.ShidoScore == Hansokumake)
                 {
-                    await _blueJudoka.DecreaseIpponScore();
+                    _blueJudoka.DecreaseIpponScore();
                 }
-                
-                await _whiteJudoka.DecreaseShidoScore();
+
+                _whiteJudoka.DecreaseShidoScore();
                 break;
-            case (Score.Ippon, Player.Blue): await _blueJudoka.DecreaseIpponScore(); break;
-            case (Score.Wazari, Player.Blue): await _blueJudoka.DecreaseWazariScore(); break;
-            case (Score.Yuko, Player.Blue): await _blueJudoka.DecreaseYukoScore(); break;
+            case (Score.Ippon, Player.Blue): _blueJudoka.DecreaseIpponScore(); break;
+            case (Score.Wazari, Player.Blue): _blueJudoka.DecreaseWazariScore(); break;
+            case (Score.Yuko, Player.Blue): _blueJudoka.DecreaseYukoScore(); break;
             case (Score.Shido, Player.Blue):
-                if (_blueJudoka.ShidoScore == HANSOKUMAKE)
+                if (_blueJudoka.ShidoScore == Hansokumake)
                 {
-                    await _whiteJudoka.DecreaseIpponScore();
+                    _whiteJudoka.DecreaseIpponScore();
                 }
-                await _blueJudoka.DecreaseShidoScore(); break;
+
+                _blueJudoka.DecreaseShidoScore();
+                break;
         }
 
-        CheckWinner();
-         
+        await CheckWinnerAsync();
     }
 
-    public void CheckWinner()
+    public async Task CheckWinnerAsync()
     {
         if (_blueJudoka.IpponScore > _whiteJudoka.IpponScore)
         {
-            _winner = BLUE;
+            _winner = Player.Blue;
+            await OnTimeChanged();
             return;
         }
 
         if (_whiteJudoka.IpponScore > _blueJudoka.IpponScore)
         {
-            _winner = WHITE;
+            _winner = Player.White;
+            await OnTimeChanged();
             return;
         }
 
-        if (Timer._currentCount > TimeSpan.Zero && !Timer._isGoldenScore)
+        if (Timer.GetTimerCount() > TimeSpan.Zero && !Timer.IsGoldenScore)
         {
-            _winner = NO_WINNER;
+            _winner = null;
+            await OnTimeChanged();
             return;
         }
 
         if (_blueJudoka.WazariScore > _whiteJudoka.WazariScore)
         {
-            _winner = BLUE;
+            _winner = Player.Blue;
+            await OnTimeChanged();
             return;
         }
 
         if (_whiteJudoka.WazariScore > _blueJudoka.WazariScore)
         {
-            _winner = WHITE;
+            _winner = Player.White;
+            await OnTimeChanged();
             return;
         }
 
         if (_blueJudoka.YukoScore > _whiteJudoka.YukoScore)
         {
-            _winner = BLUE;
+            _winner = Player.Blue;
+            await OnTimeChanged();
             return;
         }
 
         if (_whiteJudoka.YukoScore > _blueJudoka.YukoScore)
         {
-            _winner = WHITE;
+            _winner = Player.White;
+            await OnTimeChanged();
             return;
         }
 
-        if (Timer._currentCount == TimeSpan.Zero)
+        if (Timer.GetTimerCount() == TimeSpan.Zero)
         {
-            Timer._isGoldenScore = true;
+            Timer.IsGoldenScore = true;
         }
 
-        _winner = NO_WINNER;
+        _winner = null;
+        await OnTimeChanged();
     }
-    
-    
 }

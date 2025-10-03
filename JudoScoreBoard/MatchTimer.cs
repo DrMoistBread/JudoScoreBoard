@@ -4,24 +4,36 @@ namespace JudoScoreBoard;
 
 public class MatchTimer
 {
-    public TimeSpan _currentCount;
+    private TimeSpan _currentCount;
 
-    public MatchTimer( ScoreBoard scoreBoard)
+    public TimeSpan GetTimerCount() => _currentCount;
+
+    public TimeSpan SetTimer(int seconds)
+    {
+        var newtime = _currentCount.Add(TimeSpan.FromSeconds(seconds));
+        if (newtime.TotalSeconds > 0)
+        {
+            _currentCount = newtime;
+        }
+
+        return _currentCount;
+    }
+
+    public MatchTimer(ScoreBoard scoreBoard)
     {
         _scoreBoard = scoreBoard;
     }
 
     public Func<Task> OnTimeChanged;
 
-    public bool _isGoldenScore = false;
+    public bool IsGoldenScore { get; set; }
 
     private Timer _timer;
     private ScoreBoard _scoreBoard;
 
     public void StartGoldenScore()
     {
-        _isGoldenScore = true;
-        
+        IsGoldenScore = true;
     }
 
     public void InitializeTimer(TimeSpan timer)
@@ -39,9 +51,8 @@ public class MatchTimer
                 _timer.Stop();
                 if (!_scoreBoard.OsaekomiTimer.IsRunning())
                 {
-                    _scoreBoard.CheckWinner();
+                    await _scoreBoard.CheckWinnerAsync();
                 }
-
             }
 
             await OnTimeChanged();
@@ -50,7 +61,6 @@ public class MatchTimer
 
     public async Task StartTimer()
     {
-        
         if (!_scoreBoard.HasWinner())
         {
             _timer.Start();
@@ -60,7 +70,10 @@ public class MatchTimer
     public async Task StopTimer()
     {
         _timer.Stop();
-        await _scoreBoard.OsaekomiTimer.Stop();
+        if (_scoreBoard.OsaekomiTimer.IsRunning())
+        {
+            await _scoreBoard.OsaekomiTimer.StopAsync();
+        }
     }
 
     public async Task<bool> ToggleTimer()
@@ -70,10 +83,10 @@ public class MatchTimer
             _timer.Enabled = !_timer.Enabled;
             if (!_timer.Enabled)
             {
-                await _scoreBoard.OsaekomiTimer.Stop();
+                await _scoreBoard.OsaekomiTimer.StopAsync();
             }
+
             return _timer.Enabled;
-            
         }
 
         return false;

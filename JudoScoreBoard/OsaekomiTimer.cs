@@ -6,7 +6,7 @@ namespace JudoScoreBoard;
 
 public class OsaekomiTimer
 {
-    public int _currentCount { get; private set; }
+    public int CurrentCount { get; private set; }
     private Timer _timer;
     public Func<Player?, Task> OnTimeChanged;
     private Player? _currentOsaekomiPlayer;
@@ -20,56 +20,38 @@ public class OsaekomiTimer
         _timer.Interval = 1000;
         _timer.Elapsed += async (object? sender, ElapsedEventArgs e) =>
         {
-            _currentCount++;
+            CurrentCount++;
 
-            if (_scoreBoard.Timer._isGoldenScore)
+            if (_scoreBoard.Timer.IsGoldenScore)
             {
-                if (_currentCount >= 5)
+                if (CurrentCount == 5)
                 {
-                    await Stop();
-                    if (_currentOsaekomiPlayer == Player.Blue)
-                    {
-                        await scoreBoard.IncreaseScore(Score.Yuko, Player.Blue);
-                    }
-
-                    if (_currentOsaekomiPlayer == Player.White)
-                    {
-                        await scoreBoard.IncreaseScore(Score.Yuko, Player.White);
-                    }
-                    
+                    await StopAsync();
+                    return;
                 }
-               
             }
 
-            if (_currentCount is >= 10 and < 20)
+            if (CurrentCount == 10 )
             {
                 if (_scoreBoard.GetScoreBlue(Score.Wazari) == 1 && _currentOsaekomiPlayer == Player.Blue)
                 {
-                    await _scoreBoard.IncreaseScore(Score.Wazari, Player.Blue);
-                    await Stop();
+                    await StopAsync();
+                    return;
                 }
 
                 if (_scoreBoard.GetScoreWhite(Score.Wazari) == 1 && _currentOsaekomiPlayer == Player.White)
                 {
-                    await _scoreBoard.IncreaseScore(Score.Wazari, Player.White);
-                    await Stop();
+                    await StopAsync();
+                    return;
                 }
                 
             }
 
 
-            if (_currentCount >= 20)
+            if (CurrentCount == 20)
             {
-                await Stop();
-            
-                if (_currentOsaekomiPlayer == Player.Blue)
-                {
-                    await _scoreBoard.IncreaseScore(Score.Ippon,Player.Blue);
-                }
-                else
-                {
-                    await _scoreBoard.IncreaseScore(Score.Ippon, Player.White);
-                }
+                await StopAsync();
+                return;
             }
 
             await OnTimeChanged(_currentOsaekomiPlayer);
@@ -84,22 +66,22 @@ public class OsaekomiTimer
         }
     }
 
-    public async Task Stop()
+    public async Task StopAsync()
     {
         _timer.Enabled = false;
-        await SetScoreOnStop();
-        // await OnTimeChanged(_currentOsaekomiPlayer);
+         await SetScoreOnStop();
     }
 
     public async Task ToggleAsync(Player player)
     {
+        await OnTimeChanged(player);
         if (!_scoreBoard.Timer.IsRunning() && !IsRunning())
         {
             return;
         }
         if (_currentOsaekomiPlayer == player)
         {
-            await Stop();
+            await StopAsync();
             return;
         }
 
@@ -107,11 +89,9 @@ public class OsaekomiTimer
 
         if (!_timer.Enabled)
         {
-            _currentCount = 0;
+            CurrentCount = 0;
             Start();
         }
-
-        // await OnTimeChanged(_currentOsaekomiPlayer);
     }
 
     private async Task SetScoreOnStop()
@@ -120,7 +100,7 @@ public class OsaekomiTimer
         {
             return;
         }
-        switch (_currentCount)
+        switch (CurrentCount)
         {
             case >= 10 and <20:
                 await _scoreBoard.IncreaseScore(Score.Wazari, _currentOsaekomiPlayer.Value);
@@ -129,7 +109,9 @@ public class OsaekomiTimer
                 await _scoreBoard.IncreaseScore(Score.Yuko, _currentOsaekomiPlayer.Value);
                 break;
         }
-
+        
+        await _scoreBoard.CheckWinnerAsync();
+        
         _currentOsaekomiPlayer = null;
     }
 

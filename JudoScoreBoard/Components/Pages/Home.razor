@@ -1,17 +1,15 @@
 ﻿@page "/"
-@using System.Timers
-@using Microsoft.VisualBasic
 @implements IAsyncDisposable
 @inject HotKeys HotKeys
 @using Toolbelt.Blazor.HotKeys2
 @inject IJSRuntime JsRuntime;
-@inject Blazored.LocalStorage.ILocalStorageService localStorage;
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage;
 @inject ScoreBoard ScoreBoard
 
 
 <audio id="sound" src="Sounds/bell.mp3"/>
 
-@if (showModal)
+@if (_showModal)
 {
     <div class="modal-backdrop-ui">
         <div class="modal-content-ui">
@@ -35,7 +33,7 @@
 
         <div class="scoreboard-side white-side">
 
-            <div class="score-value-row @flashWhiteClass">
+            <div class="score-value-row @_flashWhiteClass">
                 <div class="score-value"
                      @oncontextmenu="@(() => ScoreBoard.DecreaseScore(Score.Ippon, Player.White))"
                      @oncontextmenu:preventDefault
@@ -56,12 +54,12 @@
                 </div>
                 <div class="score-value" @oncontextmenu="@(() => ScoreBoard.DecreaseScore(Score.Shido,Player.White))"
                 @oncontextmenu:preventDefault @onclick="@(() => ScoreBoard.IncreaseScore(Score.Shido, Player.White))">
-                <img src="@ShidoImages[ScoreBoard.GetScoreWhite(Score.Shido)]" alt="" width="100px">
+                <img src="@_shidoImages[ScoreBoard.GetScoreWhite(Score.Shido)]" alt="" width="100px">
                 </div>
             </div>
         </div>
         <div class="scoreboard-side blue-side" style=" color: white">
-            <div class="score-value-row @flashBlueClass">
+            <div class="score-value-row @_flashBlueClass">
                 <div class="score-value"
                      @oncontextmenu="@(() => ScoreBoard.DecreaseScore(Score.Ippon, Player.Blue))"
                      @oncontextmenu:preventDefault
@@ -84,7 +82,7 @@
                      @oncontextmenu:preventDefault
                      @onclick="@(() => ScoreBoard.IncreaseScore(Score.Shido, Player.Blue))">
                     
-                    <img src="@ShidoImages[ScoreBoard.GetScoreBlue(Score.Shido)]"
+                    <img src="@_shidoImages[ScoreBoard.GetScoreBlue(Score.Shido)]"
                          alt=""
                          width="100px">
                 </div>
@@ -95,17 +93,17 @@
     <div class="timer-bar row" style="background-color: @_bgColour;">
         <div class="col-3 vh-40 align-middle text-center user-select-none" style="text-align: center; height: 200px;"
              @onclick='()=> ScoreBoard.OsaekomiTimer.ToggleAsync(Player.White)'>
-            <div hidden="@(_hiddenWhite)"> @ScoreBoard.OsaekomiTimer._currentCount</div>
+            <div hidden="@(_hiddenWhite)"> @ScoreBoard.OsaekomiTimer.CurrentCount</div>
         </div>
         <div @onclick="ToogleMatchTimer" class="col-6 vh-40 align-middle text-center user-select-none">
             <div>@ScoreBoard.GetMatchTime().ToString("mm\\:ss")</div>
             <div
-                style="font-size: 1rem;margin-top: -1rem">@(ScoreBoard.Timer._isGoldenScore ? "GOLDEN SCORE" : "")</div>
+                style="font-size: 1rem;margin-top: -1rem">@(ScoreBoard.Timer.IsGoldenScore ? "GOLDEN SCORE" : "")</div>
         </div>
         <div class="col-3 vh-40 align-middle text-center user-select-none" style="text-align: center; height: 200px;"
              @onclick='()=> ScoreBoard.OsaekomiTimer.ToggleAsync(Player.Blue)'>
             <div hidden="@(_hiddenBlue)">
-                @ScoreBoard.OsaekomiTimer._currentCount
+                @ScoreBoard.OsaekomiTimer.CurrentCount
             </div>
         </div>
     </div>
@@ -117,23 +115,18 @@
 
     private HotKeysContext? _hotKeysContext;
 
-    private bool showModal = false;
+    private bool _showModal = false;
 
-    private string _bgColour;
-    private const string GOLDEN_SCORE_TIMER_COLOUR = "#d6b031";
-    private const string TIMER_RUNNING_COLOUR = "green";
-    private const string TIMER_STOPPED_COLOUR = "red";
+    private string? _bgColour;
+    private const string? GoldenScoreTimerColour = "#d6b031";
+    private const string TimerRunningColour = "green";
+    private const string TimerStoppedColour = "red";
     
 
-    private Timer _osaekomiTimer;
     private bool _hiddenWhite = true;
     private bool _hiddenBlue = true;
-    private string _currentOsaekomiTori = "";
-    private int _osaekomiCount = 0;
-    private bool _isOsaekomiEnabled = false;
-    private string ShidoImage;
 
-    private string[] ShidoImages =
+    private string[] _shidoImages =
     [
         "",
         "/Images/OneShido.png",
@@ -141,16 +134,16 @@
         "/Images/Hansokumake.png"
     ];
 
-    private string flashWhiteClass = "";
-    private string flashBlueClass = "";
+    private string _flashWhiteClass = "";
+    private string _flashBlueClass = "";
 
-    private async Task TriggerWhiteFlash()
+    private async Task TriggerWhiteFlashAsync()
     {
-        flashWhiteClass = "flash-effect";
+        _flashWhiteClass = "flash-effect";
         await InvokeAsync(StateHasChanged);
 
         await Task.Delay(3000); // 3 flashes × 0.5s
-        flashWhiteClass = "";
+        _flashWhiteClass = "";
         await InvokeAsync(StateHasChanged);
     }
 
@@ -164,11 +157,11 @@
         
         if (ScoreBoard.IsBlueWinner())
         {
-            TriggerBlueFlash();
+            TriggerBlueFlashAsync();
         }
         else if (ScoreBoard.IsWhiteWinner())
         {
-            TriggerWhiteFlash();
+            TriggerWhiteFlashAsync();
         }
 
         SetTimerBackground(ScoreBoard.Timer.IsRunning());
@@ -178,17 +171,18 @@
 
     public void Dispose()
     {
+        ScoreBoard.OnTimeChanged -= Refresh;
         ScoreBoard.Timer.OnTimeChanged -= Refresh;
         ScoreBoard.Timer.StopTimer();
     }
 
-    private async Task TriggerBlueFlash()
+    private async Task TriggerBlueFlashAsync()
     {
-        flashBlueClass = "flash-effect";
+        _flashBlueClass = "flash-effect";
         await InvokeAsync(StateHasChanged);
 
         await Task.Delay(3000); // 3 flashes × 0.5s
-        flashBlueClass = "";
+        _flashBlueClass = "";
         await InvokeAsync(StateHasChanged);
     }
 
@@ -199,7 +193,7 @@
             _hotKeysContext = HotKeys.CreateContext()
                 .Add(ModCode.Ctrl, Code.T, TogglePanel);
 
-            var startingTime = await localStorage.GetItemAsync<TimeSpan>("timer");
+            var startingTime = await LocalStorage.GetItemAsync<TimeSpan>("timer");
             if (startingTime is { Minutes: 0, Seconds: 0 })
             {
                 startingTime = TimeSpan.FromMinutes(4);
@@ -216,10 +210,11 @@
     {
         await base.OnInitializedAsync();
 
+        ScoreBoard.OnTimeChanged += Refresh;
         ScoreBoard.Timer.OnTimeChanged += Refresh;
         ScoreBoard.OsaekomiTimer.OnTimeChanged += RefreshOsaekomi;
 
-        _bgColour = TIMER_STOPPED_COLOUR;
+        _bgColour = TimerStoppedColour;
 
 
         await InvokeAsync(StateHasChanged);
@@ -227,122 +222,24 @@
 
     private async Task RefreshOsaekomi(Player? player)
     {
-        // _hiddenBlue = false;
-        // _hiddenWhite = false;
-        if (player == Player.Blue)
+        switch (player)
         {
-            _hiddenBlue = false;
-            _hiddenWhite = true;
+            case Player.Blue:
+                _hiddenBlue = false;
+                _hiddenWhite = true;
+                break;
+            case Player.White:
+                _hiddenWhite = false;
+                _hiddenBlue = true;
+                break;
         }
 
-        if (player == Player.White)
-        {
-            _hiddenWhite = false;
-            _hiddenBlue = true;
-        }
-
-        await Refresh();
-
+        await InvokeAsync(StateHasChanged);
     }
-
-
-    // private async Task ToggleOsaekomi(string tori)
-    // {
-    //     if (!_osaekomiTimer.Enabled && _timer.Enabled)
-    //     {
-    //         _osaekomiTimer.Start();
-    //         _isOsaekomiEnabled = true;
-    //         _osaekomiCount = 0;
-    //     }
-    //     else if ((_currentOsaekomiTori == tori || !_timer.Enabled) && _osaekomiTimer.Enabled)
-    //     {
-    //         _osaekomiTimer.Stop();
-    //         _isOsaekomiEnabled = false;
-    //         if (_osaekomiCount >= 5 && _osaekomiCount < 10)
-    //         {
-    //             if (_currentOsaekomiTori == "blue")
-    //             {
-    //                 _scoreBlue[YUKO]++;
-    //             }
-    //             else
-    //             {
-    //                 _scoreWhite[YUKO]++;
-    //             }
-    //         }
-    //
-    //         if (_osaekomiCount >= 10 && _osaekomiCount < 20)
-    //         {
-    //             if (_currentOsaekomiTori == "blue")
-    //             {
-    //                 _scoreBlue[WAZARI]++;
-    //             }
-    //             else
-    //             {
-    //                 _scoreWhite[WAZARI]++;
-    //             }
-    //         }
-    //
-    //         if (_currentCount == TimeSpan.Zero)
-    //         {
-    //             await StopTime();
-    //         }
-    //     }
-    //
-    //     if (tori == "white")
-    //     {
-    //         _hiddenBlue = true;
-    //         _hiddenWhite = false;
-    //     }
-    //
-    //     if (tori == "blue")
-    //     {
-    //         _hiddenBlue = false;
-    //         _hiddenWhite = true;
-    //     }
-    //
-    //     _currentOsaekomiTori = tori;
-    //     await CheckWinner();
-    // }
-
-    // private void ToggleTime()
-    // {
-    //     if (!string.IsNullOrWhiteSpace(_winner))
-    //     {
-    //         return;
-    //     }
-    //
-    //     if (_bgColour == "red")
-    //     {
-    //         _bgColour = _isGoldenScore ? "#d6b031" : "green";
-    //     }
-    //     else
-    //     {
-    //         _bgColour = "red";
-    //     }
-    //
-    //     _timer.Enabled = !_timer.Enabled;
-    //     if (_timer.Enabled)
-    //     {
-    //         _hiddenBlue = true;
-    //         _hiddenWhite = true;
-    //     }
-    //
-    //     _osaekomiTimer.Stop();
-    // }
-
-    // private async Task StopTime()
-    // {
-    //     _bgColour = "red";
-    //     _timer.Enabled = false;
-    //     _osaekomiTimer.Stop();
-    // }
-
-
     
-
     private void TogglePanel()
     {
-        showModal = !showModal;
+        _showModal = !_showModal;
         StateHasChanged();
     }
 
@@ -350,14 +247,10 @@
     {
         var newDefaultTimer = ScoreBoard.SetMatchTime(deltaSeconds);
 
-        await localStorage.SetItemAsync("timer", newDefaultTimer);
+        await LocalStorage.SetItemAsync("timer", newDefaultTimer);
 
         StateHasChanged();
     }
-
-    // protected override void OnAfterRender(bool firstRender)
-    // {
-    // }
 
     public async ValueTask DisposeAsync()
     {
@@ -378,7 +271,7 @@
         
         if (!isTimerRunning && ScoreBoard.OsaekomiTimer.IsRunning())
         {
-            await ScoreBoard.OsaekomiTimer.Stop();
+            await ScoreBoard.OsaekomiTimer.StopAsync();
         }
         
         SetTimerBackground(isTimerRunning);
@@ -388,8 +281,8 @@
 
     private void SetTimerBackground(bool isTimerRunning)
     {
-        var runningColour = ScoreBoard.Timer._isGoldenScore ? GOLDEN_SCORE_TIMER_COLOUR : TIMER_RUNNING_COLOUR;
-        _bgColour = isTimerRunning ? runningColour : TIMER_STOPPED_COLOUR;
+        var runningColour = ScoreBoard.Timer.IsGoldenScore ? GoldenScoreTimerColour : TimerRunningColour;
+        _bgColour = isTimerRunning ? runningColour : TimerStoppedColour;
     }
 
 }

@@ -2,61 +2,47 @@ namespace JudoScoreBoard;
 
 public class PlayerScore
 {
-    public PlayerScore()
-    {
-        IpponScore = 0;
-        WazariScore = 0;
-        YukoScore = 0;
-        ShidoScore = 0;
-    }
-
     public  int IpponScore { get; private set; }
     public int WazariScore { get; private set;}
     public int YukoScore { get;  private set;}
     public int ShidoScore { get;  private set;}
 
-    public async Task IncreaseYukoScore()
+    public void IncreaseYukoScore()
     {
         if (IpponScore == 0)
         {
             YukoScore++;
         }
-
-        // await CheckWinner();
     }
 
-    public async Task DecreaseYukoScore()
+    public void DecreaseYukoScore()
     {
         if (IpponScore == 0)
         {
             if (YukoScore > 0)
             {
                 YukoScore--;
-                // await CheckWinner();
             }
         }
     }
     
-    public async Task IncreaseIpponScore()
+    public void IncreaseIpponScore()
     {
         if (IpponScore == 0)
         {
             IpponScore++;
-
-            // await CheckWinner();
         }
     }
 
-    public async Task DecreaseIpponScore()
+    public void DecreaseIpponScore()
     {
         if (IpponScore == 1)
         {
             IpponScore--;
-            // await CheckWinner();
         }
     }
 
-    public async Task IncreaseWazariScore()
+    public void IncreaseWazariScore()
     {
         if (WazariScore == 0 && IpponScore == 0)
         {
@@ -65,22 +51,19 @@ public class PlayerScore
         else if (WazariScore == 1 && IpponScore == 0)
         {
             WazariScore = 0;
-            await IncreaseIpponScore();
+            IncreaseIpponScore();
         }
-
-        // await CheckWinner();
     }
 
-    public async Task DecreaseWazariScore()
+    public void DecreaseWazariScore()
     {
         if (WazariScore == 1)
         {
             WazariScore--;
-            // await CheckWinner();
         }
     }
     
-    public async Task IncreaseShidoScore()
+    public void IncreaseShidoScore()
     {
         if (ShidoScore > 2)
         {
@@ -90,18 +73,13 @@ public class PlayerScore
         ShidoScore++;
     }
     
-    public async Task DecreaseShidoScore()
+    public void DecreaseShidoScore()
     {
         if (ShidoScore <= 0)
         {
             return;
         }
-    
-        if (ShidoScore == 3)
-        {
-           
-        }
-
+        
         ShidoScore--;
     }
 }
