@@ -108,6 +108,9 @@ public class OsaekomiTimer
             case >= 5 and <10:
                 await _scoreBoard.IncreaseScore(Score.Yuko, _currentOsaekomiPlayer.Value);
                 break;
+            case >= 20:
+                await _scoreBoard.IncreaseScore(Score.Ippon, _currentOsaekomiPlayer.Value);
+                break;
         }
         
         await _scoreBoard.CheckWinnerAsync();
