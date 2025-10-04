@@ -90,15 +90,15 @@
         </div>
 
     </div>
-    <div class="timer-bar row" style="background-color: @_bgColour;">
+    <div class="timer-bar row" style="background-color: @_bgColour;color:@_timerColour">
         <div class="col-3 vh-40 align-middle text-center user-select-none" style="text-align: center; height: 200px;"
              @onclick='()=> ScoreBoard.OsaekomiTimer.ToggleAsync(Player.White)'>
             <div hidden="@(_hiddenWhite)"> @ScoreBoard.OsaekomiTimer.CurrentCount</div>
         </div>
         <div @onclick="ToogleMatchTimer" class="col-6 vh-40 align-middle text-center user-select-none">
-            <div>@ScoreBoard.GetMatchTime().ToString("mm\\:ss")</div>
-            <div
-                style="font-size: 1rem;margin-top: -1rem">@(ScoreBoard.Timer.IsGoldenScore ? "GOLDEN SCORE" : "")</div>
+            <div style="font-size: 8rem;margin-top: -3rem">@ScoreBoard.GetMatchTime().ToString("mm\\:ss")</div>
+            <div 
+                style="font-size: 1rem;margin-top: -2rem">@(ScoreBoard.Timer.IsGoldenScore ? "GOLDEN SCORE" : "")</div>
         </div>
         <div class="col-3 vh-40 align-middle text-center user-select-none" style="text-align: center; height: 200px;"
              @onclick='()=> ScoreBoard.OsaekomiTimer.ToggleAsync(Player.Blue)'>
@@ -118,6 +118,7 @@
     private bool _showModal = false;
 
     private string? _bgColour;
+    private string? _timerColour;
     private const string? GoldenScoreTimerColour = "#d6b031";
     private const string TimerRunningColour = "green";
     private const string TimerStoppedColour = "red";
@@ -282,6 +283,7 @@
     private void SetTimerBackground(bool isTimerRunning)
     {
         var runningColour = ScoreBoard.Timer.IsGoldenScore ? GoldenScoreTimerColour : TimerRunningColour;
+        _timerColour = ScoreBoard.Timer.IsGoldenScore && isTimerRunning ? "#333131FF" : "white";
         _bgColour = isTimerRunning ? runningColour : TimerStoppedColour;
     }
 
