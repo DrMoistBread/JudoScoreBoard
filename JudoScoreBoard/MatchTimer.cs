@@ -59,7 +59,7 @@ public class MatchTimer
         };
     }
 
-    public async Task StartTimer()
+    public async Task StartTimerAsync()
     {
         if (!_scoreBoard.HasWinner())
         {
