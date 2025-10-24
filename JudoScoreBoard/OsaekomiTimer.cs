@@ -58,9 +58,9 @@ public class OsaekomiTimer
         };
     }
 
-    public void Start()
+    public async Task StartAsync()
     {
-        if (_scoreBoard.Timer.IsRunning())
+        if (_scoreBoard.Timer.IsRunning() || _scoreBoard.HasWinner())
         {
             _timer.Enabled = true;
         }
@@ -75,10 +75,10 @@ public class OsaekomiTimer
     public async Task ToggleAsync(Player player)
     {
         await OnTimeChanged(player);
-        if (!_scoreBoard.Timer.IsRunning() && !IsRunning())
-        {
-            return;
-        }
+        // if (!IsRunning())
+        // {
+        //     return;
+        // }
         if (_currentOsaekomiPlayer == player)
         {
             await StopAsync();
@@ -90,7 +90,7 @@ public class OsaekomiTimer
         if (!_timer.Enabled)
         {
             CurrentCount = 0;
-            Start();
+            StartAsync();
         }
     }
 
