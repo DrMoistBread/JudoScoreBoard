@@ -80,6 +80,7 @@
                 </div>
                 <div class="score-value" @oncontextmenu="@(() => ScoreBoard.DecreaseScore(Score.Shido, Player.Blue))"
                      @oncontextmenu:preventDefault
+                    
                      @onclick="@(() => ScoreBoard.IncreaseScore(Score.Shido, Player.Blue))">
                     
                     <img src="@_shidoImages[ScoreBoard.GetScoreBlue(Score.Shido)]"
@@ -95,13 +96,18 @@
              @onclick='()=> ScoreBoard.OsaekomiTimer.ToggleAsync(Player.White)'>
             <div hidden="@(_hiddenWhite)"> @ScoreBoard.OsaekomiTimer.CurrentCount</div>
         </div>
-        <div @onclick="ToogleMatchTimer" class="col-6 vh-40 align-middle text-center user-select-none">
+        <div @onclick="ToogleMatchTimer" 
+             @oncontextmenu="TogglePanel"
+             @oncontextmenu:preventDefault
+             class="col-6 vh-40 align-middle text-center user-select-none">
             <div style="font-size: 8rem;margin-top: -3rem">@ScoreBoard.GetMatchTime().ToString("mm\\:ss")</div>
             <div 
                 style="font-size: 1rem;margin-top: -2rem">@(ScoreBoard.Timer.IsGoldenScore ? "GOLDEN SCORE" : "")</div>
         </div>
         <div class="col-3 vh-40 align-middle text-center user-select-none" style="text-align: center; height: 200px;"
-             @onclick='()=> ScoreBoard.OsaekomiTimer.ToggleAsync(Player.Blue)'>
+             @onclick='()=> ScoreBoard.OsaekomiTimer.ToggleAsync(Player.Blue)'
+             
+            >
             <div hidden="@(_hiddenBlue)">
                 @ScoreBoard.OsaekomiTimer.CurrentCount
             </div>
@@ -154,6 +160,7 @@
         {
             await ScoreBoard.Timer.StopTimer();
             await JsRuntime.InvokeAsync<string>("PlayAudio", "sound");
+            
         }
         
         if (ScoreBoard.IsBlueWinner())
@@ -192,7 +199,26 @@
         if (firstRender)
         {
             _hotKeysContext = HotKeys.CreateContext()
-                .Add(ModCode.Ctrl, Code.T, TogglePanel);
+                .Add(ModCode.Alt, Code.T, TogglePanel)
+                .Add(Code.Space, ToogleMatchTimer)
+                .Add(Code.ArrowRight, () => ScoreBoard.OsaekomiTimer.ToggleAsync(Player.Blue))
+                .Add(Code.ArrowLeft, () => ScoreBoard.OsaekomiTimer.ToggleAsync(Player.White))
+                .Add(Code.Q, () => ScoreBoard.IncreaseScore(Score.Ippon,Player.White))
+                .Add(Code.W, () => ScoreBoard.IncreaseScore(Score.Wazari,Player.White))
+                .Add(Code.E, () => ScoreBoard.IncreaseScore(Score.Yuko,Player.White))
+                .Add(Code.R, () => ScoreBoard.IncreaseScore(Score.Shido,Player.White))
+                .Add(Code.A, () => ScoreBoard.DecreaseScore(Score.Ippon, Player.White))
+                .Add(Code.S, () => ScoreBoard.DecreaseScore(Score.Wazari, Player.White))
+                .Add(Code.D, () => ScoreBoard.DecreaseScore(Score.Yuko, Player.White))
+                .Add(Code.F, () => ScoreBoard.DecreaseScore(Score.Shido, Player.White))
+                .Add(Code.Y, () => ScoreBoard.IncreaseScore(Score.Ippon,Player.Blue))
+                .Add(Code.U, () => ScoreBoard.IncreaseScore(Score.Wazari,Player.Blue))
+                .Add(Code.I, () => ScoreBoard.IncreaseScore(Score.Yuko,Player.Blue))
+                .Add(Code.O, () => ScoreBoard.IncreaseScore(Score.Shido,Player.Blue))
+                .Add(Code.H, () => ScoreBoard.DecreaseScore(Score.Ippon, Player.Blue))
+                .Add(Code.J, () => ScoreBoard.DecreaseScore(Score.Wazari, Player.Blue))
+                .Add(Code.K, () => ScoreBoard.DecreaseScore(Score.Yuko, Player.Blue))
+                .Add(Code.L, () => ScoreBoard.DecreaseScore(Score.Shido, Player.Blue));
 
             var startingTime = await LocalStorage.GetItemAsync<TimeSpan>("timer");
             if (startingTime is { Minutes: 0, Seconds: 0 })
